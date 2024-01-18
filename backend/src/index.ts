@@ -1,4 +1,5 @@
-import { initializeApp, applicationDefault } from "firebase-admin/app";
+import admin from "firebase-admin";
+import serviceAccount from '../credentials/service-account.json' assert { type: 'json' };
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 
@@ -58,7 +59,6 @@ const { url } = await startStandaloneServer(server, {
 
 console.log(`🚀  Server ready at: ${url}`);
 
-// initializeApp({
-//   credential: applicationDefault(),
-//   databaseURL: 'https://<DATABASE_NAME>.firebaseio.com',
-// });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+});
