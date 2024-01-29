@@ -25,6 +25,7 @@ const typeDefs = `#graphql
     filename: String
     gsRef: String
     comments: [Comment]
+    patientID: String
   }
 
   # Comment object
@@ -47,7 +48,7 @@ const typeDefs = `#graphql
     patient(id: ID!): Patient
 
     # get all files for a patient
-    getFilesForPatient(id: ID!): [File]
+    filesByPatient(id: ID!): [File]
   }
 `;
 // Resolvers define how to fetch the types defined in your schema.
@@ -66,7 +67,7 @@ const resolvers = {
                 .get();
             return patient.data();
         },
-        getFilesForPatient: async (_, { id }) => {
+        filesByPatient: async (_, { id }) => {
             const files = await admin
                 .firestore()
                 .collection("patients")
@@ -89,7 +90,27 @@ const resolvers = {
                 return filesSnapshot.docs.map((file) => file.data());
             }
             catch (error) {
-                console.log(error);
+                console.error(error);
+                throw new Error(error);
+            }
+        },
+    },
+    File: {
+        comments: async (file) => {
+            try {
+                console.log(file);
+                const commentsSnapshot = await admin
+                    .firestore()
+                    .collection("patients")
+                    .doc(`${file.patientID}`)
+                    .collection("files")
+                    .doc(`${file.id}`)
+                    .collection("comments")
+                    .get();
+                return commentsSnapshot.docs.map((comment) => comment.data());
+            }
+            catch (error) {
+                console.error(error);
                 throw new Error(error);
             }
         },
