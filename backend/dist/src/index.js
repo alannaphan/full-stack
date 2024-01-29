@@ -22,6 +22,7 @@ const typeDefs = `#graphql
 
   # File object
   type File {
+    id: ID
     filename: String
     gsRef: String
     comments: [Comment]
@@ -30,7 +31,7 @@ const typeDefs = `#graphql
 
   # Comment object
   type Comment {
-    id: ID!
+    id: ID
     text: String
     author: String
     date: String
@@ -50,9 +51,67 @@ const typeDefs = `#graphql
     # get all files for a patient
     filesByPatient(id: ID!): [File]
   }
+  
+# The "Mutation" type is special: it lists all of the available mutations that
+# clients can execute, along with the return type for each. In this
+# case, the "addFile" mutation returns a Patient (defined above).
+
+type Mutation {
+    # add a file to a patient
+    addFile(filename: String!, gsRef: String!, patientID: String!): File
+
+    # add a comment to a file
+    addComment(text: String!, author: String!, date: String!, fileID: String!, patientID: String!): Comment
+}
 `;
 // Resolvers define how to fetch the types defined in your schema.
 const resolvers = {
+    Mutation: {
+        addFile: async (_, { filename, gsRef, patientID }) => {
+            try {
+                const filesCollectionRef = admin
+                    .firestore()
+                    .collection("patients")
+                    .doc(patientID)
+                    .collection("files");
+                const newFileRef = await filesCollectionRef.add({
+                    filename,
+                    gsRef,
+                    patientID,
+                });
+                const newFileId = newFileRef.id;
+                await newFileRef.update({ id: newFileId });
+                return newFileRef.get().then((file) => file.data());
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error(error);
+            }
+        },
+        addComment: async (_, { text, author, date, fileID, patientID }) => {
+            try {
+                const commentCollectionRef = admin
+                    .firestore()
+                    .collection("patients")
+                    .doc(patientID)
+                    .collection("files")
+                    .doc(fileID)
+                    .collection("comments");
+                const newCommentRef = await commentCollectionRef.add({
+                    text,
+                    author,
+                    date,
+                });
+                const newCommentId = newCommentRef.id;
+                await newCommentRef.update({ id: newCommentId });
+                return newCommentRef.get().then((comment) => comment.data());
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error(error);
+            }
+        },
+    },
     Query: {
         patients: async () => {
             const patients = await admin.firestore().collection("patients").get();
@@ -98,7 +157,6 @@ const resolvers = {
     File: {
         comments: async (file) => {
             try {
-                console.log(file);
                 const commentsSnapshot = await admin
                     .firestore()
                     .collection("patients")
