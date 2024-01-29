@@ -1,7 +1,8 @@
 import admin from "firebase-admin";
-import serviceAccount from '../credentials/service-account.json' assert { type: 'json' };
-import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import serviceAccount from "../service-account.json" assert { type: "json" };
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
+// Initialize Firebase with Firebase Admin SDK credentials
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
@@ -16,13 +17,22 @@ const typeDefs = `#graphql
     id: ID!
     name: String
     dob: String
-    doctor: Doctor!
+    files: [File]
   }
 
-  type Doctor {
+  # File object
+  type File {
+    filename: String
+    gsRef: String
+    comments: [Comment]
+  }
+
+  # Comment object
+  type Comment {
     id: ID!
-    name: String
-    patients: [Patient]
+    text: String
+    author: String
+    date: String
   }
 
   # The "Query" type is special: it lists all of the available queries that
@@ -30,35 +40,58 @@ const typeDefs = `#graphql
   # case, the "patients" query returns an array of zero or more Patients (defined above).
   
   type Query {
+    # list all patients
     patients: [Patient]
-    doctors: [Doctor]
+
+    # get a single patient by ID
+    patient(id: ID!): Patient
+
+    # get all files for a patient
+    getFilesForPatient(id: ID!): [File]
   }
 `;
-// const books = [
-//   {
-//     title: 'The Awakening',
-//     author: 'Kate Chopin',
-//   },
-//   {
-//     title: 'City of Glass',
-//     author: 'Paul Auster',
-//   },
-// ];
 // Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
 const resolvers = {
     Query: {
         patients: async () => {
-            const db = admin.firestore();
-            const patients = await db.collection('patients').get();
+            const patients = await admin.firestore().collection("patients").get();
             const patientsList = patients.docs.map((patient) => patient.data());
             return patientsList;
         },
-        doctors: async () => {
-            const db = admin.firestore();
-            const doctors = await db.collection('doctors').get();
-            const doctorsList = doctors.docs.map((doctor) => doctor.data());
-            return doctorsList;
+        patient: async (_, { id }) => {
+            const patient = await admin
+                .firestore()
+                .collection("patients")
+                .doc(id)
+                .get();
+            return patient.data();
+        },
+        getFilesForPatient: async (_, { id }) => {
+            const files = await admin
+                .firestore()
+                .collection("patients")
+                .doc(id)
+                .collection("files")
+                .get();
+            const filesList = files.docs.map((file) => file.data());
+            return filesList;
+        },
+    },
+    Patient: {
+        files: async (patient) => {
+            try {
+                const filesSnapshot = await admin
+                    .firestore()
+                    .collection("patients")
+                    .doc(`${patient.id}`)
+                    .collection("files")
+                    .get();
+                return filesSnapshot.docs.map((file) => file.data());
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error(error);
+            }
         },
     },
 };
