@@ -62,6 +62,9 @@ type Mutation {
 
     # add a comment to a file
     addComment(text: String!, author: String!, date: String!, fileID: String!, patientID: String!): Comment
+
+    # delete a comment from a file
+    deleteComment(commentID: String!, fileID: String!, patientID: String!): Comment
 }
 `;
 // Resolvers define how to fetch the types defined in your schema.
@@ -105,6 +108,24 @@ const resolvers = {
                 const newCommentId = newCommentRef.id;
                 await newCommentRef.update({ id: newCommentId });
                 return newCommentRef.get().then((comment) => comment.data());
+            }
+            catch (error) {
+                console.log(error);
+                throw new Error(error);
+            }
+        },
+        deleteComment: async (_, { commentID, fileID, patientID }) => {
+            try {
+                const commentRef = admin
+                    .firestore()
+                    .collection("patients")
+                    .doc(patientID)
+                    .collection("files")
+                    .doc(fileID)
+                    .collection("comments")
+                    .doc(commentID);
+                await commentRef.delete();
+                return console.log("Deleted comment!");
             }
             catch (error) {
                 console.log(error);
