@@ -1,4 +1,4 @@
-# Project File Manager 
+# Patient File Manager 
 This is a project assignment completed for Sentry Health by Alanna Phan. 
 
 The tech stack requirements for this project were all completely brand new to me but although it was challenging, it was also very fun and rewarding to learn! 
