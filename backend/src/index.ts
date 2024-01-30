@@ -8,9 +8,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
 });
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
+// Schema definitions using GraphQL schema language
 const typeDefs = `#graphql
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
@@ -40,8 +38,7 @@ const typeDefs = `#graphql
   }
 
   # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "patients" query returns an array of zero or more Patients (defined above).
+  # clients can execute, along with the return type for each.
   
   type Query {
     # list all patients
@@ -54,11 +51,11 @@ const typeDefs = `#graphql
     filesByPatient(id: ID!): [File]
   }
   
-# The "Mutation" type is special: it lists all of the available mutations that
-# clients can execute, along with the return type for each. In this
-# case, the "addFile" mutation returns a Patient (defined above).
+  # The "Mutation" type is special: it lists all of the available mutations that
+  # clients can execute, along with the return type for each. In this
+  # case, the "addFile" mutation returns a Patient (defined above).
 
-type Mutation {
+  type Mutation {
     # add a file to a patient
     addFile(filename: String!, gsRef: String!, patientID: String!): File
 
@@ -87,9 +84,10 @@ const resolvers = {
           patientID,
         });
 
+        // this assigns the new file's ID to the file's ID field
         const newFileId = newFileRef.id;
-
         await newFileRef.update({ id: newFileId });
+
         return newFileRef.get().then((file) => file.data());
       } catch (error) {
         console.log(error);
@@ -112,9 +110,10 @@ const resolvers = {
           date,
         });
 
+        // this assigns the new comment's ID to the comment's ID field
         const newCommentId = newCommentRef.id;
-
         await newCommentRef.update({ id: newCommentId });
+
         return newCommentRef.get().then((comment) => comment.data());
       } catch (error) {
         console.log(error);
@@ -134,7 +133,6 @@ const resolvers = {
 
         await commentRef.delete();
         return console.log("Deleted comment!");
-        
       } catch (error) {
         console.log(error);
         throw new Error(error);
@@ -169,6 +167,7 @@ const resolvers = {
     },
   },
   Patient: {
+    // this resolver is called when a patient's files are requested within a Patient query
     files: async (patient) => {
       try {
         const filesSnapshot = await admin
@@ -186,6 +185,7 @@ const resolvers = {
     },
   },
   File: {
+    // this resolver is called when a file's comments are requested within a File query
     comments: async (file) => {
       try {
         const commentsSnapshot = await admin
