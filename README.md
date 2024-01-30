@@ -46,7 +46,7 @@ The next steps are very tedious but if you'd like to play with the data, you'll 
 
 On the main page of your project from [Firebase console](https://console.firebase.google.com/), click on:
 ``` Build > Firestore Database > Create Database > set your location > Start in test mode```
-and *voila!* Database created.
+**and *voila!* Database created.**
 
 All the credentials are the same so you don't need to worry about adding more. However, now you're going to need to manually seed the mock data into the database. 
 1. Click "**+ Start collection**"
@@ -54,9 +54,9 @@ All the credentials are the same so you don't need to worry about adding more. H
 3. You are forced to create a document within the collection, give it the ID **"12345"**
 4. Add the fields **"id", "dob" and "name"** to the document, they must all be **String type**. You can be as creative as you want for the input.  Please see the image below for an example of what you should see.
 
-IMAGE
+![Firestore Database](https://github.com/alannaphan/patient-file-manager/blob/feature/frontend-setup/docs/firestore.png?raw=true)
 
-Now that we have some patient data in our database, we can get to the fun part!
+Now that we have some patient data in our database, we can get to the fun part! 
 We'll be using **mutations** to add files to our newly created patient! 
 
 1. Let's head back to the **Apollo Server Playground** at [http://localhost:4000/](http://localhost:4000/)
@@ -85,6 +85,7 @@ Now you've successfully added a file to your patient in the database! Go ahead a
 You can go ahead and create comments for the file using the **addComment(...)** mutation now, just make sure to copy your **newly created file's ID**, you will need it as an argument for the mutation.
 
 After that's done, you can use the **Query** type to query patient data, which has files and comments nested within it. You would only need to provide the **patient ID** as a parameter for some of the queries.
+![Example of Query Results](https://github.com/alannaphan/patient-file-manager/blob/feature/frontend-setup/docs/apollo.png?raw=true)
 
 That's it for the backend for now! I planned to use **Firebase Storage** for uploading the actual patient files, but I wanted to implement the upload through the frontend client.
 
@@ -101,9 +102,15 @@ Now everything should be up and running on http://localhost:3000/ !
 
 You'll be able to see your own patient information and file info populated on the main page. That is about as far as I got, but look forward to more implementations in the future! 
 
-See below for screenshots and more information on my planning!
+### See below for screenshots and more information on my planning!
+![Landing page with patient information, pulled from database](https://github.com/alannaphan/patient-file-manager/blob/feature/frontend-setup/docs/patient_list.png?raw=true)
 
-### Original Project README instructions below
+![Add File Page, unfinished](https://github.com/alannaphan/patient-file-manager/blob/feature/frontend-setup/docs/add_file.png?raw=true)
+
+![Detailed File Page, unfinished](https://github.com/alannaphan/patient-file-manager/blob/feature/frontend-setup/docs/file_page.png?raw=true)
+### Thank you for reading and checking out my project!
+
+# Original Project README instructions below
 
 ## Quick Start
 
